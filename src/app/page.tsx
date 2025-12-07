@@ -29,7 +29,7 @@ export default function Home() {
       // Cache buster
       params.append('t', Date.now().toString());
 
-      const res = await fetch(`/api/properties?${params.toString()}`);
+      const res = await fetch(`/api/properties?${params.toString()}`, { cache: 'no-store' });
       const data = await res.json();
       console.log('Fetched properties:', data); // Log for debugging
       setProperties(data);
@@ -55,10 +55,9 @@ export default function Home() {
 
       <div className="flex-1 relative mt-16">
         {/* Filters Overlay */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[20] w-[95%] max-w-6xl pointer-events-none">
-          <div className="pointer-events-auto shadow-2xl rounded-lg">
-            <PropertyFilters filters={filters} onFilterChange={setFilters} />
-          </div>
+        {/* Filters Overlay Container - Layout handled by PropertyFilters */}
+        <div className="absolute inset-0 z-[20] pointer-events-none">
+          <PropertyFilters filters={filters} onFilterChange={setFilters} />
         </div>
 
         {/* Map */}

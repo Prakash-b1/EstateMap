@@ -3,6 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import { Property } from '@/types';
 
+// Force dynamic to prevent Next.js from caching the GET response statically
+export const dynamic = 'force-dynamic';
+
 const dataPath = path.join(process.cwd(), 'src', 'data', 'properties.json');
 
 function getProperties(): Property[] {

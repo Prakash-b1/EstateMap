@@ -121,7 +121,7 @@ export default function ListPropertyModal({ isOpen, onClose, onSuccess }: ListPr
                         initial={{ scale: 0.95, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        className="bg-white w-full max-w-2xl rounded-2xl shadow-xl relative z-10 overflow-hidden flex flex-col max-h-full"
+                        className="bg-white w-full max-w-2xl rounded-2xl shadow-xl relative z-10 overflow-hidden flex flex-col max-h-[90vh]"
                     >
                         <div className="flex items-center justify-between p-4 border-b">
                             <h3 className="font-bold text-lg text-gray-800">List Your Property</h3>
@@ -130,15 +130,15 @@ export default function ListPropertyModal({ isOpen, onClose, onSuccess }: ListPr
                             </button>
                         </div>
 
-                        <div className="overflow-y-auto p-6">
-                            <form id="list-property-form" onSubmit={handleSubmit} className="space-y-6">
+                        <div className="overflow-y-auto p-4 md:p-6">
+                            <form id="list-property-form" onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Property Title</label>
                                         <input name="title" required className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Spacious 2BHK in Bandra" />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
                                             <input name="price" required type="number" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 15000000" />

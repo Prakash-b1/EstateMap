@@ -1,65 +1,105 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import Header from '@/components/Header';
+import Map from '@/components/Map';
+import PropertyFilters from '@/components/Filters/PropertyFilters';
+import PropertyDrawer from '@/components/Property/PropertyDrawer';
+import EnquiryForm from '@/components/Forms/EnquiryForm';
+import ListPropertyModal from '@/components/Forms/ListPropertyModal';
+import { Property, FilterState } from '@/types';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<FilterState>({});
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
+  const [isListPropertyOpen, setIsListPropertyOpen] = useState(false);
+
+  const fetchProperties = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.type) params.append('type', filters.type);
+      if (filters.saleMode) params.append('saleMode', filters.saleMode);
+      if (filters.usage) params.append('usage', filters.usage);
+      if (filters.search) params.append('city', filters.search);
+      // Cache buster
+      params.append('t', Date.now().toString());
+
+      const res = await fetch(`/api/properties?${params.toString()}`);
+      const data = await res.json();
+      console.log('Fetched properties:', data); // Log for debugging
+      setProperties(data);
+    } catch (error) {
+      console.error('Failed to fetch properties', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch properties when filters change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchProperties();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [filters]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+      <Header onListPropertyClick={() => setIsListPropertyOpen(true)} />
+
+      <div className="flex-1 relative mt-16">
+        {/* Filters Overlay */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[20] w-[95%] max-w-6xl pointer-events-none">
+          <div className="pointer-events-auto shadow-2xl rounded-lg">
+            <PropertyFilters filters={filters} onFilterChange={setFilters} />
+          </div>
+        </div>
+
+        {/* Map */}
+        <div className="w-full h-full relative z-0">
+          <Map
+            properties={properties}
+            onMarkerClick={(p) => setSelectedProperty(p)}
+          />
+
+          {/* Loading Indicator */}
+          {loading && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-lg z-[400] flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+              <span className="text-sm font-medium text-gray-600">Updating map...</span>
+            </div>
+          )}
+        </div>
+
+        {/* Property Drawer */}
+        <PropertyDrawer
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
+          onEnquire={() => setIsEnquiryOpen(true)}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+        {/* Enquiry Modal */}
+        <EnquiryForm
+          isOpen={isEnquiryOpen}
+          onClose={() => setIsEnquiryOpen(false)}
+          propertyTitle={selectedProperty?.title || ''}
+        />
+
+        {/* List Property Modal */}
+        <ListPropertyModal
+          isOpen={isListPropertyOpen}
+          onClose={() => setIsListPropertyOpen(false)}
+          onSuccess={() => {
+            fetchProperties(); // Refresh map
+          }}
+        />
+      </div>
+    </main>
   );
 }
